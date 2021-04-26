@@ -281,6 +281,44 @@ func (list *SkipList) Get(key interface{}) (elem *Element) {
 	return
 }
 
+// FindLowerBound returns an lower bound element with the key.
+// If the key is not found, returns an less one.
+//
+// The complexity is O(log(N)).
+func (list *SkipList) FindLowerBound(key interface{}) (elem *Element) {
+	if list.length == 0 {
+		return
+	}
+
+	elem = list.Front()
+	score := list.calcScore(key)
+	prevHeader := &list.elementHeader
+	i := len(list.levels) - 1
+
+	// Find out previous elements on every possible levels.
+	for i >= 0 {
+		for next := prevHeader.levels[i]; next != nil; next = prevHeader.levels[i] {
+			if comp := list.compare(score, key, next); comp <= 0 { // 如果要查找的值 <= 当前位置的下一个值
+				elem = next
+				if comp == 0 {
+					return
+				}
+				break
+			}
+			prevHeader = &next.elementHeader //  如果要查找的值 > 下一个值: 向前进一格
+		}
+
+		// 往下走一层
+		topLevel := prevHeader.levels[i]
+		elem = topLevel
+		// Skip levels if they point to the same element as topLevel.
+		for i--; i >= 0 && prevHeader.levels[i] == topLevel; i-- {
+		}
+	}
+
+	return
+}
+
 // GetValue returns value of the element with the key.
 // It's short hand for Get().Value.
 //

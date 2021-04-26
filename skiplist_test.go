@@ -136,6 +136,33 @@ func TestBasicCRUD(t *testing.T) {
 	a.Equal(list.Get(12.34), nil)
 }
 
+func TestFindFirst(t *testing.T) {
+	a := assert.New(t)
+	list := New(Float64)
+	a.Assert(list.Len() == 0)
+
+	list.Set(9.01, "very beginning")
+	list.Set(12.34, "first")
+	list.Set(12.78, "middle3")
+	list.Set(14.34, "first1")
+	list.Set(16.78, "middle")
+	list.Set(16.79999, "middle overwrite")
+	list.Set(18.45, "second2")
+	list.Set(23.45, "second")
+
+	a.Equal(9.01, list.FindLowerBound(9).Key())
+	a.Equal(12.34, list.FindLowerBound(10).Key())
+	a.Equal(12.78, list.FindLowerBound(12.4).Key())
+	a.Equal(14.34, list.FindLowerBound(14.3).Key())
+	a.Equal(16.78, list.FindLowerBound(14.35).Key())
+	a.NotEqual(16.79999, list.FindLowerBound(16.77).Key())
+	a.Equal(16.79999, list.FindLowerBound(16.79).Key())
+	a.Equal(18.45, list.FindLowerBound(18.44).Key())
+	a.Equal(23.45, list.FindLowerBound(23).Key())
+
+	a.Equal(nil, list.FindLowerBound(23.46))
+}
+
 type testCustomComparable struct {
 	High, Low int
 }
